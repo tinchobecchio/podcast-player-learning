@@ -1,0 +1,24 @@
+{
+  "name": "podcast-player",
+  "version": "1.0.0",
+  "description": "Podcast Player to listen to podcasts",
+  "main": "script.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "tincho",
+  "license": "ISC",
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "^11.14.0",
+      "onFail": "download"
+    }
+  },
+  "type": "module",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1"
+  }
+}
