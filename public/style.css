@@ -535,7 +535,31 @@ button:hover {
     }
 }
 
+/* Smartphone Vertical: (with Browser UI) */
+@media (max-width: 500px) and (max-height: 675px) {
+    .player {
+        height: 300px;
+    }
 
+    .img-container {
+        height: 100px;
+        width: 100px;
+        top: -25px;
+    }
+
+    .title-container {
+        top: -20px;
+    }
+
+    .controls-container {
+        bottom: 5px;
+    }
+
+    .queue {
+        top: 70px;
+        height: calc(100% - 360px);
+    }
+}
 
 
 

@@ -1,31 +1,142 @@
-// Navigation -----------------------------------
-const searchLink = document.getElementById("searchLink")
-const listenLink = document.getElementById("listenLink")
-const searchContainer = document.querySelector(".search-container")
-const mainContainer = document.querySelector(".main-container")
-const playerContainer = document.querySelector(".player-container")
-const queueContainer = document.querySelector(".queue")
+document.addEventListener('DOMContentLoaded', () => {
+    const searchHistory = document.getElementById("searchHistory")
+    const searchInput = document.getElementById("searchInput")
+    const searchButton = document.getElementById("searchButton")
+    const resetButton = document.getElementById("resetButton")
+    const responseContainer = document.getElementById("response")
 
-searchLink.addEventListener('click', navigateToSearch)
-listenLink.addEventListener('click', navigateToPlayer)
+    // Reset search history 
+    function resetHistory() {
+        searchHistory.innerText = ''
+        const opt = document.createElement('option')
+        opt.value = ''
+        opt.textContent = 'Select a Previous Search'
+        searchHistory.appendChild(opt)
+    }
 
-function navigateToSearch() {
-    searchContainer.style.display = 'flex'
-    mainContainer.style.display = 'flex'
-    playerContainer.style.display = 'none'
-    queueContainer.style.display = 'none'
-    searchLink.classList.add('selected')
-    listenLink.classList.remove('selected')
-}
+    // Load search history from local storage
+    function loadSearchHistory() {
+        const savedSearches = JSON.parse(localStorage.getItem('searchHistory')) || []
+        resetHistory()
+        for (const search of savedSearches) {
+            const opt = document.createElement('option')
+            opt.value = search
+            opt.textContent = search
+            searchHistory.appendChild(opt)
+        }
+    }
 
-function navigateToPlayer() {
-    searchContainer.style.display = 'none'
-    mainContainer.style.display = 'none'
-    playerContainer.style.display = 'flex'
-    queueContainer.style.display = 'flex'
-    searchLink.classList.remove('selected')
-    listenLink.classList.add('selected')
-}
+    // Save the search history to local storage
+    function saveSearchHistory(searchTerm) {
+        let savedSearches = JSON.parse(localStorage.getItem('searchHistory')) || []
+        if (!savedSearches.includes(searchTerm)) {   
+            savedSearches.push(searchTerm)
+            localStorage.setItem('searchHistory', JSON.stringify(savedSearches))
+        }
+    }
+
+    // Event listener for dropdown change
+    searchHistory.addEventListener('change', () => {
+        const selectedSearch = searchHistory.value
+        if (selectedSearch) {
+            searchInput.value = selectedSearch
+            searchPodcast()
+        }
+    })
+
+    // Event listener for search button, input
+    searchButton.addEventListener('click', searchPodcast)
+    searchInput.addEventListener('keypress', e => {
+        if (e.key === 'Enter') {
+            searchPodcast()
+        }
+    })
+    
+    // Event listener to reset search input
+    searchInput.addEventListener('focus', () => {
+        searchInput.value = ''
+    })
+
+    // Event listener for reset button
+    resetButton.addEventListener('click', () => {
+        localStorage.removeItem('searchHistory')
+        resetHistory()
+        searchInput.value = ''
+    })
+
+    // Load search history when the page loads
+    loadSearchHistory()
+
+    // Search Podcasts
+    async function searchPodcast() {
+        const searchTerm = searchInput.value.trim()
+        if (searchTerm) {
+            console.log('Searched:', searchTerm);
+            saveSearchHistory(searchTerm) 
+            loadSearchHistory()
+        } else {
+            responseContainer.innerText = 'Please enter a podcast title.'
+        }
+
+        responseContainer.textContent = ''
+
+        try {
+            const response = await fetch(`./api/search?q=${encodeURIComponent(searchTerm)}`)
+            const data = await response.json()
+            if (data.feeds && data.feeds.length > 0) {
+                console.log('Results:', data.feeds);
+            } else {
+                responseContainer.textContent = 'No Results Found'
+            }
+            
+            
+        } catch (error) {
+            responseContainer.innerText = `Error: ${error.message}`
+        }
+    }
+
+
+    // Navigation -----------------------------------
+    const searchLink = document.getElementById("searchLink")
+    const listenLink = document.getElementById("listenLink")
+    const searchContainer = document.querySelector(".search-container")
+    const mainContainer = document.querySelector(".main-container")
+    const playerContainer = document.querySelector(".player-container")
+    const queueContainer = document.querySelector(".queue")
+    
+    searchLink.addEventListener('click', navigateToSearch)
+    listenLink.addEventListener('click', navigateToPlayer)
+    
+    function navigateToSearch() {
+        searchContainer.style.display = 'flex'
+        mainContainer.style.display = 'flex'
+        playerContainer.style.display = 'none'
+        queueContainer.style.display = 'none'
+        searchLink.classList.add('selected')
+        listenLink.classList.remove('selected')
+    }
+    
+    function navigateToPlayer() {
+        searchContainer.style.display = 'none'
+        mainContainer.style.display = 'none'
+        playerContainer.style.display = 'flex'
+        queueContainer.style.display = 'flex'
+        searchLink.classList.remove('selected')
+        listenLink.classList.add('selected')
+    }
+
+})
+
+
+
+
+
+
+
+
+
+
+
 
 
 
