@@ -158,22 +158,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Load Episodes
-    async function loadEpisodes(feedId, count) {
+    async function loadEpisodes(feedId, count) {      
         if(!feedId) return
         showLoader()
 
-
+        responseContainer.textContent = ''
         try {
             const response = await fetch(`./api/episodes?feedId=${encodeURIComponent(feedId)}&max=${count}`)
             const data = await response.json()
             
             if (data.items && data.items.length > 0) {
-                console.log('Episodes: ', data.items);
-                
-                // for (const podcast of data.items) {
-                //     const card = createCard(podcast)
-                //     responseContainer.appendChild(card)
-                // }
+                for (const episode of data.items) {
+                    const card = createEpisodeCard(episode)
+                    responseContainer.appendChild(card)
+                }
             } else {
                 responseContainer.textContent = 'No Results Found'
             }
@@ -185,7 +183,53 @@ document.addEventListener('DOMContentLoaded', () => {
         hideLoader()
     }
 
+    // Create Episode Card 
+    function createEpisodeCard(episode) {
+        const card = document.createElement('div')
+        card.className = 'card'
+        
+        const img = document.createElement('img')
+        img.src = episode.image || episode.feedImage || './default-podcast.png'
+        img.alt = episode.title
+        
+        const content = document.createElement('div')
+        content.className = 'card-content'
 
+        const title = document.createElement('h3')
+        title.innerText = episode.title
+        
+        const iconContainer = document.createElement('div')
+        iconContainer.className = 'icon-container'
+
+        const playBtnIcon = document.createElement('i')
+        playBtnIcon.className = 'fas fa-play-circle mr-10'
+        playBtnIcon.title = 'Play Podcast'
+        playBtnIcon.addEventListener('click', () => {
+            console.log('Episode played: ', episode);
+        })
+
+        const queueBtnIcon = document.createElement('i')
+        queueBtnIcon.className = 'fas fa-list'
+        queueBtnIcon.title = 'Add to Queue'
+        queueBtnIcon.addEventListener('click', () => {
+            console.log('Episode queued: ', episode);
+        })
+
+
+        const description = document.createElement('p')
+        description.innerHTML = episode.description
+        
+        const pubDate = document.createElement('p')
+        pubDate.className = 'pub-date-alt'
+        pubDate.innerText = `Published: ${episode.datePublished ? formatDate(episode.datePublished) : 'Not Available'}`
+        
+
+        iconContainer.append(playBtnIcon, queueBtnIcon, pubDate)
+        content.append(title, iconContainer, description)
+        card.append(img, content)
+
+        return card
+    }
 
 
 
