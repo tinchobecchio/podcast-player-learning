@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchButton = document.getElementById("searchButton")
     const resetButton = document.getElementById("resetButton")
     const responseContainer = document.getElementById("response")
+    const loader = document.getElementById("loader")
 
     // Reset search history 
     function resetHistory() {
@@ -67,6 +68,24 @@ document.addEventListener('DOMContentLoaded', () => {
     // Load search history when the page loads
     loadSearchHistory()
 
+    // Format Date
+    function formatDate(timestamp) {
+        const date = new Date(timestamp * 1000)
+        return date.toLocaleDateString()
+    }
+
+    // Show loading animation
+    function showLoader() {
+        loader.style.display = 'flex'
+        responseContainer.style.display = 'none'
+    }
+
+    // Hide loading animation
+    function hideLoader() {
+        loader.style.display = 'none'
+        responseContainer.style.display = 'flex'
+    }
+
     // Search Podcasts
     async function searchPodcast() {
         const searchTerm = searchInput.value.trim()
@@ -76,15 +95,22 @@ document.addEventListener('DOMContentLoaded', () => {
             loadSearchHistory()
         } else {
             responseContainer.innerText = 'Please enter a podcast title.'
+            return
         }
+
+        showLoader()
 
         responseContainer.textContent = ''
 
         try {
             const response = await fetch(`./api/search?q=${encodeURIComponent(searchTerm)}`)
             const data = await response.json()
+            
             if (data.feeds && data.feeds.length > 0) {
-                console.log('Results:', data.feeds);
+                for (const podcast of data.feeds) {
+                    const card = createCard(podcast)
+                    responseContainer.appendChild(card)
+                }
             } else {
                 responseContainer.textContent = 'No Results Found'
             }
@@ -93,7 +119,46 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             responseContainer.innerText = `Error: ${error.message}`
         }
+
+        hideLoader()
     }
+
+    // Create Podcast Card 
+    function createCard(podcast) {
+        const card = document.createElement('div')
+        card.className = 'card'
+        
+        const img = document.createElement('img')
+        img.src = podcast.image || './default-podcast.png'
+        img.alt = podcast.title
+        
+        const content = document.createElement('div')
+        content.className = 'card-content'
+
+        const title = document.createElement('h3')
+        title.innerText = podcast.title
+        
+        const description = document.createElement('p')
+        description.innerText = podcast.description
+        
+        const episodeCount = document.createElement('p')
+        episodeCount.className = 'episode-count'
+        episodeCount.innerText = `Episodes: ${podcast.episodeCount}`
+        
+        const pubDate = document.createElement('p')
+        pubDate.className = 'pub.date'
+        pubDate.innerText = `Newest Episode: ${podcast.newestItemPubdate ? formatDate(podcast.newestItemPubdate) : 'Not Available'}`
+        
+        content.append(title, description, episodeCount, pubDate)
+        card.append(img, content)
+
+        return card
+    }
+
+
+
+
+
 
 
     // Navigation -----------------------------------
