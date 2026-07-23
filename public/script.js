@@ -126,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Create Podcast Card 
     function createCard(podcast) {
         const card = document.createElement('div')
-        card.className = 'card'
+        card.className = 'card pointer'
         
         const img = document.createElement('img')
         img.src = podcast.image || './default-podcast.png'
@@ -152,10 +152,38 @@ document.addEventListener('DOMContentLoaded', () => {
         content.append(title, description, episodeCount, pubDate)
         card.append(img, content)
 
+        card.addEventListener('click', () => loadEpisodes(podcast.itunesId, podcast.episodeCount))
+
         return card
     }
 
+    // Load Episodes
+    async function loadEpisodes(feedId, count) {
+        if(!feedId) return
+        showLoader()
 
+
+        try {
+            const response = await fetch(`./api/episodes?feedId=${encodeURIComponent(feedId)}&max=${count}`)
+            const data = await response.json()
+            
+            if (data.items && data.items.length > 0) {
+                console.log('Episodes: ', data.items);
+                
+                // for (const podcast of data.items) {
+                //     const card = createCard(podcast)
+                //     responseContainer.appendChild(card)
+                // }
+            } else {
+                responseContainer.textContent = 'No Results Found'
+            }
+            
+        } catch (error) {
+            responseContainer.innerText = `Error: ${error.message}`
+        }
+
+        hideLoader()
+    }
 
 
 
